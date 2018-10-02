@@ -1,10 +1,12 @@
 class EntriesController < ApplicationController
   before_action :set_entry, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_user!
+  before_action :check_if_owner, only: [:show, :edit, :udpate, :destroy]
 
   # GET /entries
   # GET /entries.json
   def index
-    @entries = Entry.all
+    @entries = current_user.entries
   end
 
   # GET /entries/1
@@ -24,7 +26,7 @@ class EntriesController < ApplicationController
   # POST /entries
   # POST /entries.json
   def create
-    @entry = Entry.new(entry_params)
+    @entry = current_user.entries.new(entry_params)
 
     respond_to do |format|
       if @entry.save
@@ -62,6 +64,10 @@ class EntriesController < ApplicationController
   end
 
   private
+    def check_if_owner
+      redirect_to(root_path, notice: 'You do not have permission to access that page') if current_user != @entry.user
+    end
+
     # Use callbacks to share common setup or constraints between actions.
     def set_entry
       @entry = Entry.find(params[:id])
